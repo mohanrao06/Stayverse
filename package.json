@@ -9,6 +9,7 @@
   "author": "Mohan",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "ejs": "^5.0.2",
     "ejs-mate": "^4.0.0",
     "express": "^5.2.1",
