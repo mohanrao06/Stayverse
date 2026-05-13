@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const passport = require("passport");
-
+const {saveRedirectUrl} = require("../middlewares.js")
 router.get("/signup",(req,res)=>{
     res.render("users/signup.ejs")
 })
@@ -14,8 +14,14 @@ router.post("/signup",wrapAsync(async(req,res)=>{
         const newUser = new User({email,username});
         const registerUser =await User.register(newUser,password);
         console.log(registerUser);
-        req.flash("success","Wecome to Stayverse!")
-        res.redirect("/listings");
+        req.login(registerUser,(err)=>{
+            if(err){
+                return next(err);
+            }
+            req.flash("success","Wecome to Stayverse!")
+            res.redirect("/listings");
+        })
+        
     }catch(err){
          req.flash("error",err.message);
          res.redirect("/signup");
@@ -31,13 +37,25 @@ router.get("/login",(req,res)=>{
 
 router.post(
     "/login",
+    saveRedirectUrl,
     passport.authenticate('local',{
         failureRedirect:"/login", 
         failureFlash: true
     }),
     async(req,res)=>{
     req.flash("success","Welcome back to Stayverse!");
-    res.redirect("/listings");
+    let redirectUrl = res.locals.redirectUrl || "/listings";
+    res.redirect(redirectUrl);
+})
+
+router.get("/logout",(req,res,next)=>{
+    req.logOut((err)=>{
+        if(err){
+            return next(err);
+        }
+        req.flash("success","You are logOut now!");
+        res.redirect("/listings");
+    })
 })
 
 module.exports=router
